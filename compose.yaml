@@ -1,0 +1,25 @@
+name: parkeasy
+
+services:
+  postgres:
+    image: postgres:18.4-bookworm
+    environment:
+      POSTGRES_DB: ${PARKEASY_DB_NAME:-parkeasy}
+      POSTGRES_USER: ${PARKEASY_DB_USERNAME:-parkeasy}
+      POSTGRES_PASSWORD: ${PARKEASY_DB_PASSWORD:-parkeasy_local}
+    ports:
+      - "127.0.0.1:${PARKEASY_DB_PORT:-5434}:5432"
+    volumes:
+      - parkeasy_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  parkeasy_postgres_data:
