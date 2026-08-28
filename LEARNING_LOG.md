@@ -89,7 +89,7 @@ A feature is not considered educationally complete until the engineer can explai
 
 - Corrected foreign-key direction using one-to-many relationships.
 - Preserved bookings after cancellation and user/listing deactivation.
-- Selected native UUID identifiers provisionally and compared identifier alternatives.
+- Selected PostgreSQL-generated UUIDv7 identifiers after comparing generation ownership, UUID versions, B-tree page splits, and cache locality.
 - Selected authoritative scalar times plus a database-generated PostgreSQL range.
 - Explained per-listing pessimistic locking and serialization.
 - Selected application pre-check, listing-row lock, and PostgreSQL exclusion constraint as layered booking protection.
@@ -117,6 +117,20 @@ A feature is not considered educationally complete until the engineer can explai
 - Proved with a real PostgreSQL Testcontainer that Flyway applied exactly one migration and that `btree_gist` was installed.
 - Started the packaged application against the Compose database, observed Flyway migrate it to version 1, and received Actuator status `UP`.
 - Diagnosed JVM and Docker CLI crashes from system-wide RAM/page-file exhaustion rather than treating them as application or assertion failures.
+
+### Accounts database foundation
+
+**Implemented and verified:** 2026-08-24
+
+- Distinguished a business module from a folder, Java class, deployable service, and PostgreSQL named schema.
+- Assigned account identity, local credentials, roles, and account status to the Accounts & Access module.
+- Distinguished authentication (who the user is) from authorization (what the user may do).
+- Modeled multi-role membership with a separate `user_roles` relation and composite primary key.
+- Isolated password hashes in a one-to-one `user_credentials` table; plaintext passwords are never persisted.
+- Added Flyway migration `V2` for `users`, `user_credentials`, and `user_roles` with UUIDv7 defaults, foreign keys, uniqueness, and check constraints.
+- Demonstrated transaction atomicity by forcing role insertion to fail and proving that the user and credential inserts were rolled back.
+- Verified V1 and V2 plus account invariants with five tests against a real PostgreSQL 18.4 Testcontainer.
+- Diagnosed OneDrive archive locking in the Maven dependency cache and separated disposable build-cache data from project source.
 
 ## Upcoming learning
 

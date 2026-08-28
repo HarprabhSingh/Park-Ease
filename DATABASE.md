@@ -43,7 +43,9 @@ Costs:
 - randomly generated values may have worse index locality; and
 - UUIDs do not replace authorization checks.
 
-The exact UUID generation strategy remains open until implementation planning. Switching to compact internal `BIGINT` keys plus separate public UUIDs is an alternative if measurements or operational requirements justify the additional columns and indexes.
+PostgreSQL generates UUIDv7 identifiers by default using its native `uuidv7()` function. Inserts that need the generated identifier use `RETURNING`. UUIDv7 was selected over UUIDv4 for its time-ordered index locality while retaining decentralized, non-sequential public identifiers. Explicit business timestamps remain authoritative; UUID time information does not replace `created_at`.
+
+Switching to compact internal `BIGINT` keys plus separate public UUIDs remains an alternative if measurements or operational requirements later justify the additional columns and indexes.
 
 ## 4. Naming and type conventions
 
@@ -92,7 +94,7 @@ Important columns:
 
 - `user_id` — primary key;
 - `email_normalized` — unique when email is the sign-in identity;
-- `phone_normalized` — optional and unique when supplied under an approved policy;
+- phone identity is deferred until a verified product and authentication requirement exists;
 - `display_name`;
 - `account_status` — active, suspended, or closed;
 - `created_at`; and
@@ -104,7 +106,7 @@ Constraints:
 - account status is constrained to approved values; and
 - normal product operations do not delete referenced users.
 
-Open point: which identity fields are mandatory depends on the authentication decision.
+Email is the mandatory sign-in identity for the browser MVP. Email values are normalized by the application and protected by database normalization and uniqueness constraints.
 
 ### 6.2 `user_credentials`
 
@@ -117,7 +119,7 @@ Important columns:
 - credential update timestamp; and
 - security metadata justified by the authentication design.
 
-Passwords are never stored. If an external identity provider is selected, this table may be replaced or supplemented by an `external_identities` table.
+Passwords are never stored. The MVP stores only a modern encoded password hash in this table and uses server-side session-cookie authentication. If an external identity provider is selected later, this table may be supplemented by an `external_identities` table.
 
 ### 6.3 `user_roles`
 
@@ -735,5 +737,7 @@ The following relational decisions were developed with the product owner on 2026
 The product owner selected authoritative scalar arrival/departure/buffer columns plus a database-generated half-open `tstzrange` for overlap enforcement on 2026-08-16.
 
 The product owner approved native PostgreSQL UUID primary keys and the application pre-check plus listing-row lock plus PostgreSQL exclusion-constraint strategy on 2026-08-16.
+
+On 2026-08-24, the product owner approved PostgreSQL-generated UUIDv7 identifiers, mandatory normalized email identity for the browser MVP, separate local credentials, multi-role membership, default `DRIVER` registration, `OWNER` assignment when owner onboarding begins, and protected internal-only `ADMIN` assignment.
 
 Database design v0.2 was reviewed and approved by the product owner on 2026-08-16. Items in Section 19 remain implementation experiments or later product-policy decisions rather than objections to the approved direction.
