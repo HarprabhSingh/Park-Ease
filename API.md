@@ -194,7 +194,20 @@ POST /api/v1/auth/registrations
 }
 ```
 
-Response: `201 Created`. Passwords are never returned or logged. Password policy and email verification remain open security decisions.
+Response: `201 Created`.
+
+```json
+{
+  "userId": "UUID",
+  "displayName": "Example Driver",
+  "accountStatus": "ACTIVE",
+  "roles": ["DRIVER"]
+}
+```
+
+Email is normalized before uniqueness is enforced. A duplicate normalized email returns `409 Conflict` with code `EMAIL_ALREADY_REGISTERED`. Passwords are never returned or logged.
+
+The implemented provisional password policy accepts Unicode passphrases from 15 through 128 code points, applies NFC normalization, and imposes no character-composition rules. The encoded password records the Argon2id algorithm identity and parameters. Compromised-password blocklisting, measured work-factor tuning, login rate limiting, and email verification remain required security work before production use.
 
 ### 8.2 Login
 

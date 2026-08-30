@@ -132,6 +132,20 @@ A feature is not considered educationally complete until the engineer can explai
 - Verified V1 and V2 plus account invariants with five tests against a real PostgreSQL 18.4 Testcontainer.
 - Diagnosed OneDrive archive locking in the Maven dependency cache and separated disposable build-cache data from project source.
 
+### Account registration vertical slice
+
+**Implemented and verified:** 2026-08-29
+
+- Distinguished business modules from technical layers and implemented web, application, domain, and infrastructure responsibilities inside Accounts.
+- Added immutable domain vocabulary for user IDs, normalized email addresses, account status, and multi-role membership.
+- Used constructor dependency injection so the registration use case depends on application ports rather than constructing JDBC or hashing implementations.
+- Implemented explicit parameterized JDBC statements, PostgreSQL `RETURNING`, and database-exception translation for duplicate normalized email.
+- Kept Argon2id hashing outside the database transaction, then used a separate Spring-proxied `@Transactional` collaborator for the three related inserts.
+- Applied a provisional 15–128 Unicode-code-point password policy with NFC normalization and no composition rules; production blocklisting, rate limiting, email verification, and measured work-factor tuning remain open security requirements.
+- Stored versioned Argon2id hashes through Spring Security and Bouncy Castle without returning or logging the supplied password.
+- Added HTTP problem responses for malformed requests, policy violations, and duplicate email without exposing SQL or constraint details.
+- Verified normalization, application orchestration, HTTP behavior, UUIDv7 generation, password-hash storage, default role assignment, duplicate handling, and transaction rollback with unit and real PostgreSQL integration tests.
+
 ## Upcoming learning
 
 1. HTTP and REST fundamentals through the booking API.
